@@ -1,0 +1,1 @@
+Make sure to place the TinyGPS10 folder in your Arduino library 
