@@ -1,0 +1,48 @@
+#include <SoftwareSerial.h>
+
+// Here's a bluetooth device connect to pins 6 and 5
+ SoftwareSerial bt(5,4);
+ char btt = '0';
+ char srl = '0';
+ 
+
+void setup()
+{
+ Serial.begin(115200);
+ Serial.println("System Up: BLUETOOTH SLAVE");
+ bt.begin(9600);
+}
+
+void loop()
+{
+ if (bt.available())
+ {
+   String command; //string to store entire command line
+   while (bt.available())
+   {
+     btt = bt.read();
+     Serial.print(btt);
+     delay(50);
+   }
+ }
+   
+ if (Serial.available())
+ {
+   String command; //string to store entire command line
+   while (Serial.available())
+   {
+     srl = Serial.read();
+     Serial.print(srl);
+     bt.write(srl);
+     delay(50);
+     command += srl; //iterates char into string
+   }
+   if (command == "mucho") //this compares catched string vs. expected command string
+   {
+     Serial.print("COMMAND!");
+     bt.print("COMMAND!");
+   }
+     Serial.println("");
+     bt.println("");
+ }
+}
