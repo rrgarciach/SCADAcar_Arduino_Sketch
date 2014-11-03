@@ -19,6 +19,9 @@ static const uint32_t GPSBaud = 9600;
 TinyGPSPlus gps; // The TinyGPS++ object
 SoftwareSerial ss(RXPin, TXPin);
 
+int readCount = 0;
+int delayTime = 10; // delay time (in seconds) between messages.
+
 void setup()
 {
   Serial.begin(115200);
@@ -89,5 +92,9 @@ void displayInfo()
   }
 
   //Serial.println();
-  sendMessage(strValue);
+  // This will execute the sending message function when we want suposing that
+  // each second it reads the TinyGPS
+  if(readCount++ % delayTime == 0) {
+    sendMessage(strValue);
+  }
 }
