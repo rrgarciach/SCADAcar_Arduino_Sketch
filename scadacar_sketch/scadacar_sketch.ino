@@ -4,27 +4,42 @@
  Created: July 22, 2014
  By: Ruy García
  */
+ 
+#include <SoftwareSerial.h>
 
-// INPUT variables setup:
-int pin02PIR1 = 2;
+SoftwareSerial bt(5,4);
+char btt = '0';
+char srl = '0';
 
-// other variables
-volatile int valPIR1 = 0;
-int i; // for iteration testing
-
-void setup() {
-  Serial.begin(9600);
-  //pinMode(pin02PIR1, INPUT);
-  attachInterrupt(0, parpadeo, CHANGE);
-}
-
-void loop() {
-  Serial.println(i++); delay(1000);
-}
-
-void parpadeo()
+void setup()
 {
-    Serial.println("Activado");
-    //valPIR1 = !valPIR1;
+  Serial.begin(115200);
+  bt.begin(9600);
 }
 
+void loop()
+{
+  sendMessage("message of LOG test");
+  delay(1000);
+}
+
+void sendMessage(String message)
+{
+  Serial.print("Sending message: ");
+  Serial.println(message);
+  bt.println(message);
+}
+
+void readMessage()
+{
+  if (bt.available())
+  {
+    String command; //string to store entire command line
+    while (bt.available())
+    {
+      btt = bt.read();
+      Serial.print(btt);
+      delay(50);
+    }
+  }
+}
