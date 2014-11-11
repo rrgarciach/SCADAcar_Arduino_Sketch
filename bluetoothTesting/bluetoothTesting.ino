@@ -1,16 +1,16 @@
 #include <SoftwareSerial.h>
 
 // Here's a bluetooth device connect to pins 6 and 5
- SoftwareSerial bt(5,4);
+ SoftwareSerial bt(8,7);
  char btt = '0';
  char srl = '0';
  
 
 void setup()
 {
- Serial.begin(115200);
+ Serial.begin(9600);
  Serial.println("System Up: BLUETOOTH SLAVE");
- bt.begin(9600);
+ bt.begin(38400);
 }
 
 void loop()
@@ -33,14 +33,16 @@ void loop()
    {
      srl = Serial.read();
      Serial.print(srl);
-     bt.write(srl);
+     bt.print(srl);
      delay(50);
      command += srl; //iterates char into string
    }
-   if (command == "mucho") //this compares catched string vs. expected command string
+   if (command == "9800") //this compares catched string vs. expected command string
    {
-     Serial.print("COMMAND!");
-     bt.print("COMMAND!");
+     Serial.println("COMMAND!");
+     bt.println("COMMAND!");
+     bt.end();
+     bt.begin(9600);
    }
      Serial.println("");
      bt.println("");
