@@ -3,6 +3,7 @@
  Developed by: Ruy García
  Created: July 22, 2014
  By: Ruy García
+ Javascript: parseInt( ( "41 0C 0F A0".substring(6) ).replace(" ",""),16 );
  */
 
 #include <TinyGPS++.h>
@@ -86,7 +87,7 @@ void setup()
 void loop()
 {
   readGPS();
-  
+  /*
   send_OBD_cmd("ATZ");      //send to OBD ATZ, reset
   delay(1000);
   send_OBD_cmd("ATSP0");    //send ATSP0, protocol auto
@@ -97,6 +98,9 @@ void loop()
   send_OBD_cmd("0140");     //send 0140, retrieve available pid's 40-??
   delay(1000);
   send_OBD_cmd(PID_RPM);    //send 010C1, RPM cmd
+  */
+  delay(1000);
+  readMaster();
   delay(1000);
 }
 
@@ -108,15 +112,16 @@ void sendMessage(String message)
   bt.println(message);
 }
 
-void readMessage()
+void readMaster()
 {
   if (bt.available() > 0) {
     String msg; //string to store entire command line
     while (bt.available()) {
       msg += bt.read();
-      Serial.print(msg);
-      delay(50);
     }
+    Serial.println(msg);
+    delay(50);
+    checkIncommingCmd( msg.toInt() );
   }
   bt.flush();
 }
@@ -128,9 +133,11 @@ void readOBD()
     delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
     while (obd.available()) {
       msg += obd.read();
-      Serial.print(msg);
-      delay(50);
     }
+    Serial.println(msg);
+    delay(50);
+  } else {
+    sendMessage("No data from OBD2.");
   }
   obd.flush();
 }
@@ -144,11 +151,12 @@ void readGPS()
       displayInfo();
     }
   }
+  ss.flush();
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
   {
     Serial.println(F("No GPS detected: check wiring."));
-    while(true);
+    //while(true);
   }
 }
 
@@ -186,4 +194,25 @@ void send_OBD_cmd(char *obd_cmd)
 {
   obd.println(obd_cmd);
   readOBD();
+}
+
+void checkIncommingCmd(int cmd)
+{
+  switch (cmd) {
+    case 0:
+      send_OBD_cmd(PID_RPM);
+      break;
+    case 1:
+      send_OBD_cmd(PID_SPEED);
+      break;
+    case 2:
+      send_OBD_cmd(PID_FUEL_LEVEL);
+      break;
+    case 3:
+      send_OBD_cmd(PID_DISTANCE);
+      break;
+    case 4:
+      send_OBD_cmd(PID_THROTTLE);
+      break;
+  }
 }
