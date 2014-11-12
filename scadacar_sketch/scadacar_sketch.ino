@@ -9,6 +9,8 @@
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 
+boolean debug = true;
+
 // Bluetooth Serial parameters:
 SoftwareSerial bt(5,4);
 char btt = '0';
@@ -104,16 +106,18 @@ void loop()
   delay(1000);
 }
 
-void sendMessage(String message)
+void sendMessage(String msg)
 {
+  if(debug == true) {Serial.print("sending Bluetooth message: "); Serial.println(msg);}
   bt.flush();
   // Serial.print("Sending message: ");
   //Serial.println(message);
-  bt.println(message);
+  bt.println(msg);
 }
 
 void readMaster()
 {
+  if(debug == true) {Serial.println("reading Master Bluetooth...");}
   if (bt.available() > 0) {
     String msg; // string to store entire command line
     while (bt.available()) {
@@ -122,12 +126,15 @@ void readMaster()
     Serial.println(msg);
     delay(50);
     checkIncommingCmd( msg.toInt() );
+  } else {
+    if(debug == true) {Serial.println("nothing from Master Bluetooth.");}
   }
   bt.flush();
 }
 
 void readOBD()
 {
+  if(debug == true) {Serial.println("reading OBD Bluetooth...");}
   if (obd.available() > 0) {
     String msg; // string to store entire command line
     delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
@@ -136,26 +143,32 @@ void readOBD()
     }
     Serial.println(msg);
     delay(50);
-  } else {
-    sendMessage("No data from OBD2.");
+    sendMessage(msg);
+    } else {
+      if(debug == true) {Serial.println("nothing from OBD Bluetooth.");}
+      sendMessage("No data from OBD2.");
   }
   obd.flush();
 }
 
 void readGPS()
 {
+  if(debug == true) {Serial.println("reading GPS...");}
   // This sketch displays information every time a new sentence is correctly encoded.
-  while (ss.available() > 0) {
-    delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
-    if (gps.encode(ss.read())) {
+  if (ss.available() > 0) {
+    //delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
+    while (gps.encode(ss.read())) {
       displayInfo();
     }
+  } else {
+    if(debug == true) {Serial.println("nothing from GPS.");}
   }
   ss.flush();
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
   {
-    Serial.println(F("No GPS detected: check wiring."));
+    if(debug == true) {Serial.println("No GPS detected: check wiring.");}
+    //Serial.println(F("No GPS detected: check wiring."));
     // while(true);
   }
 }
@@ -198,18 +211,23 @@ void checkIncommingCmd(int cmd)
 {
   switch (cmd) {
     case 0:
+      if(debug == true) {Serial.println("Requesting PID_RPM");}
       send_OBD_cmd(PID_RPM);
       break;
     case 1:
+      if(debug == true) {Serial.println("Requesting PID_SPEED");}
       send_OBD_cmd(PID_SPEED);
       break;
     case 2:
+      if(debug == true) {Serial.println("Requesting PID_FUEL_LEVEL");}
       send_OBD_cmd(PID_FUEL_LEVEL);
       break;
     case 3:
+      if(debug == true) {Serial.println("Requesting PID_DISTANCE");}
       send_OBD_cmd(PID_DISTANCE);
       break;
     case 4:
+      if(debug == true) {Serial.println("Requesting PID_THROTTLE");}
       send_OBD_cmd(PID_THROTTLE);
       break;
   }
