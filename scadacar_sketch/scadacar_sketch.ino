@@ -87,7 +87,7 @@ void setup()
 
 void loop()
 {
-  //readGPS();
+  readGPS();
   /*
   send_OBD_cmd("ATZ");      //send to OBD ATZ, reset
   delay(1000);
@@ -161,7 +161,7 @@ void readGPS()
     // delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
     while (gps.encode(ss.read())) {
       if(debug == true) {Serial.println("reading GPS...");}
-      displayInfo();
+      displayGPSLog();
     }
   } else {
     if(debug == true) {Serial.println("nothing from GPS.");}
@@ -176,7 +176,7 @@ void readGPS()
   }
 }
 
-void displayInfo()
+void displayGPSLog()
 {
   String strValue;
   char charBuf[15];
