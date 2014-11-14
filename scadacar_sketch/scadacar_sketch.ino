@@ -14,7 +14,7 @@ boolean debug = true;
 // Bluetooth Serial parameters:
 SoftwareSerial bt(5,4);
 char btt = '0';
-char srl = '0';
+char str = '0';
 
 // TinyGPS parameters:
 static const int RXPin = 2, TXPin = 3;
@@ -82,13 +82,12 @@ void setup()
 {
   Serial.begin(115200);
   bt.begin(9600);
-  obd.begin(9600);
   ss.begin(GPSBaud);
 }
 
 void loop()
 {
-  readGPS();
+  //readGPS();
   /*
   send_OBD_cmd("ATZ");      //send to OBD ATZ, reset
   delay(1000);
@@ -106,22 +105,24 @@ void loop()
   delay(1000);
 }
 
-void sendMessage(String msg)
+void sendMaster(String msg)
 {
-  if(debug == true) {Serial.print("sending Bluetooth message: "); Serial.println(msg);}
+  bt.begin(9600);
   bt.flush();
-  // Serial.print("Sending message: ");
-  //Serial.println(message);
+  if(debug == true) {Serial.print("sending Bluetooth message: "); Serial.println(msg);}
   bt.println(msg);
+  bt.end();
 }
 
 void readMaster()
 {
-  if(debug == true) {Serial.println("reading Master Bluetooth...");}
+  bt.begin(9600);
   if (bt.available() > 0) {
     String msg; // string to store entire command line
+    if(debug == true) {Serial.println("reading Master Bluetooth...");}
     while (bt.available()) {
-      msg += bt.read();
+      str = bt.read();
+      msg += str;
     }
     Serial.println(msg);
     delay(50);
@@ -129,13 +130,14 @@ void readMaster()
   } else {
     if(debug == true) {Serial.println("nothing from Master Bluetooth.");}
   }
-  bt.flush();
+  //bt.flush();
+  bt.end();
 }
 
 void readOBD()
 {
-  if(debug == true) {Serial.println("reading OBD Bluetooth...");}
   if (obd.available() > 0) {
+    if(debug == true) {Serial.println("reading OBD Bluetooth...");}
     String msg; // string to store entire command line
     delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
     while (obd.available()) {
@@ -143,28 +145,29 @@ void readOBD()
     }
     Serial.println(msg);
     delay(50);
-    sendMessage(msg);
+    sendMaster(msg);
     } else {
       if(debug == true) {Serial.println("nothing from OBD Bluetooth.");}
-      sendMessage("No data from OBD2.");
+      sendMaster("No data from OBD2.");
   }
   obd.flush();
 }
 
 void readGPS()
 {
-  if(debug == true) {Serial.println("reading GPS...");}
+  
   // This sketch displays information every time a new sentence is correctly encoded.
   if (ss.available() > 0) {
-    //delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
+    // delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
     while (gps.encode(ss.read())) {
+      if(debug == true) {Serial.println("reading GPS...");}
       displayInfo();
     }
   } else {
     if(debug == true) {Serial.println("nothing from GPS.");}
   }
   ss.flush();
-
+  
   if (millis() > 5000 && gps.charsProcessed() < 10)
   {
     if(debug == true) {Serial.println("No GPS detected: check wiring.");}
@@ -197,14 +200,16 @@ void displayInfo()
   // This will execute the sending message function when we want suposing that
   // each second it reads the TinyGPS
   if(readCount++ % delayTime == 0) {
-    sendMessage(strValue);
+    sendMaster(strValue);
   }
 }
 
 void send_OBD_cmd(char *obd_cmd)
 {
+  obd.begin(9600);
   obd.println(obd_cmd);
   readOBD();
+  obd.end();
 }
 
 void checkIncommingCmd(int cmd)
