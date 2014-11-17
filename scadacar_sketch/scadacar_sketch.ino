@@ -23,7 +23,7 @@ TinyGPSPlus gps; // The TinyGPS++ object
 SoftwareSerial ss(RXPin, TXPin);
 
 int readCount = 0;
-int delayTime = 10; // delay time (in seconds) between messages.
+int gpsDelayTime = 10; // delay time (in seconds) between messages.
 
 SoftwareSerial obd(8,7);
 // Mode 1 PIDs
@@ -155,24 +155,25 @@ void readOBD()
 
 void readGPS()
 {
-  
-  // This sketch displays information every time a new sentence is correctly encoded.
-  if (ss.available() > 0) {
-    // delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
-    while (gps.encode(ss.read())) {
-      if(debug == true) {Serial.println("reading GPS...");}
-      displayGPSLog();
+  // This will execute the reading GPS function when we want suposing that
+  // each second it reads the TinyGPS
+  if(readCount++ % gpsDelayTime == 0) {
+    // This sketch displays information every time a new sentence is correctly encoded.
+    if (ss.available() > 0) {
+      // delay(1000); // wait 1 sec to give time enough for the serial to receive all the stream
+      while (gps.encode(ss.read())) {
+        if(debug == true) {Serial.println("reading GPS...");}
+        displayGPSLog();
+      }
+    } else {
+      if(debug == true) {Serial.println("nothing from GPS.");}
     }
-  } else {
-    if(debug == true) {Serial.println("nothing from GPS.");}
-  }
-  ss.flush();
-  
-  if (millis() > 5000 && gps.charsProcessed() < 10)
-  {
-    if(debug == true) {Serial.println("No GPS detected: check wiring.");}
-    //Serial.println(F("No GPS detected: check wiring."));
-    // while(true);
+    ss.flush();
+    
+    if (millis() > 5000 && gps.charsProcessed() < 10)
+    {
+      if(debug == true) {Serial.println("No GPS detected: check wiring.");}
+    }
   }
 }
 
@@ -181,26 +182,15 @@ void displayGPSLog()
   String strValue;
   char charBuf[15];
   if ( gps.location.isValid() ) {
-    // This function is thanks to http://dereenigne.org/arduino/arduino-float-to-string
+    /* This function is thanks to http://dereenigne.org/arduino/arduino-float-to-string */
     dtostrf(gps.location.lat(), 12, 6, charBuf);
     strValue += charBuf;
-    // Serial.print(strValue);
     strValue += ",";
-    // Serial.print(F(","));
     dtostrf(gps.location.lng(), 12, 6, charBuf);
     strValue += charBuf;
-    // Serial.print(charBuf);
   }
   else {
-    // Serial.print(F("INVALID"));
     strValue += "INVALID";
-  }
-
-  // Serial.println();
-  // This will execute the sending message function when we want suposing that
-  // each second it reads the TinyGPS
-  if(readCount++ % delayTime == 0) {
-    sendMaster(strValue);
   }
 }
 
