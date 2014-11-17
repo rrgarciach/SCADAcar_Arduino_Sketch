@@ -111,7 +111,7 @@ void sendMaster(String msg)
   bt.flush();
   if(debug == true) {Serial.print("sending Bluetooth message: "); Serial.println(msg);}
   bt.println(msg);
-  bt.end();
+  //bt.end();
 }
 
 void readMaster()
@@ -130,8 +130,8 @@ void readMaster()
   } else {
     if(debug == true) {Serial.println("nothing from Master Bluetooth.");}
   }
-  //bt.flush();
-  bt.end();
+  bt.flush();
+  //bt.end();
 }
 
 void readOBD()
@@ -234,6 +234,8 @@ void checkIncommingCmd(int cmd)
     case 4:
       if(debug == true) {Serial.println("Requesting PID_THROTTLE");}
       send_OBD_cmd(PID_THROTTLE);
+      break;
+    default:
       break;
   }
 }
